@@ -91,10 +91,6 @@ def predict_single_text(text, model, tokenizer, device, max_len=512, threshold=0
 def main():
     # --- Model and Tokenizer Directory ---
     model_directory = "desklib/ai-text-detector-v1.01"
-
-    # --- Load tokenizer and model ---
-    print("Loading model and tokenizer...")
-    start_time = time.time()
     
     # Load tokenizer with caching enabled
     tokenizer = AutoTokenizer.from_pretrained(model_directory, use_fast=True)
@@ -110,17 +106,12 @@ def main():
     if device.type == 'cuda':
         # Use mixed precision for faster computation on GPU
         model = model.half()  # Convert to FP16
-    
-    print(f"Model loaded in {time.time() - start_time:.2f} seconds")
-    print(f"Using device: {device}")
 
     # --- Example Input text ---
     text_ai = input("Test AI input: ")
 
     # --- Run prediction and output as JSON ---
-    start_time = time.time()
     result = predict_single_text(text_ai, model, tokenizer, device)
-    result["inference_time"] = round(time.time() - start_time, 4)
     print(json.dumps(result, indent=2))
 
 if __name__ == "__main__":
