@@ -1,7 +1,7 @@
 # Riyal or Fakeh: A Chrome Extension to detect whether a given piece of media is AI-generated.
 
 ## Installing Dependencies
-Using your terminal, clone this repository in a PATH of your choosing:
+Using your terminal, clone this repository in a directory of your choosing:
 ```
 git clone https://github.com/geekasah/BilisAI-2.0.git
 ```
