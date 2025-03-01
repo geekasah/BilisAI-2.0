@@ -5,7 +5,12 @@ from PIL import Image
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+<<<<<<< Updated upstream:combined_image_text/main.py
 from transformers import PreTrainedModel
+=======
+import cv2
+import numpy as np
+>>>>>>> Stashed changes:server.py
 
 # Custom AI text detection model class
 class DesklibAIDetectionModel(PreTrainedModel):
@@ -119,6 +124,101 @@ if device.type == 'cuda':
 def index():
     return app.send_static_file('index.html')
 
+@app.route('/detect-video', methods=['POST'])
+def detect_video_route():
+    try:
+        # Check if the request has the file part
+        if 'video' not in request.files:
+            return jsonify({'error': 'No video file provided'}), 400
+        
+        # Get video file from request
+        video_file = request.files['video']
+        
+        # Validate file
+        if video_file.filename == '':
+            return jsonify({'error': 'Empty file name'}), 400
+        
+        # Temporarily save uploaded file
+        temp_video_path = 'temp_video.mp4'
+        video_file.save(temp_video_path)
+        
+        # Open video capture
+        video = cv2.VideoCapture(temp_video_path)
+        
+        # Get video metadata
+        total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = video.get(cv2.CAP_PROP_FPS)
+        video_duration = total_frames / fps
+        
+        # Determine number of frames to sample based on video duration
+        if video_duration < 10:
+            num_frames = 3
+        elif video_duration < 30:
+            num_frames = 10
+        else:
+            num_frames = 15
+        
+        # Sampling strategy: evenly distribute frames across video
+        frame_indices = np.linspace(0, total_frames - 1, num_frames, dtype=int)
+        
+        # Store confidence scores
+        confidence_scores = []
+        
+        # Iterate through selected frames
+        for frame_idx in frame_indices:
+            # Set video capture to specific frame
+            video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            ret, frame = video.read()
+            
+            if not ret:
+                continue
+            
+            # Convert OpenCV image (BGR) to PIL Image (RGB)
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            pil_image = Image.fromarray(frame_rgb)
+            
+            # Process the image
+            inputs = image_processor(images=pil_image, return_tensors="pt")
+            
+            # Move inputs to the same device as the model
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+            
+            # Make prediction
+            with torch.no_grad():
+                outputs = image_model(**inputs)
+                logits = outputs.logits
+            
+            # Get predicted class and confidence
+            predicted_class_idx = logits.argmax(-1).item()
+            predicted_label = image_model.config.id2label[predicted_class_idx]
+            confidence = torch.softmax(logits, dim=1)[0][predicted_class_idx].item()
+            
+            # Store confidence score
+            confidence_scores.append(float(confidence))
+        
+        # Close video capture
+        video.release()
+        
+        # Optional: Remove temporary video file
+        import os
+        if os.path.exists(temp_video_path):
+            os.remove(temp_video_path)
+        
+        # Calculate average confidence
+        avg_confidence = np.mean(confidence_scores)
+        is_ai_generated = any(score > 0.5 for score in confidence_scores)
+        
+        return jsonify({
+            'prediction': 'AI' if is_ai_generated else 'Not AI',
+            'confidence': avg_confidence,
+            'is_ai_generated': is_ai_generated,
+            'sampled_frames': num_frames,
+            'status': 'success'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/detect', methods=['POST'])
 def detect_image():
     try:
@@ -196,4 +296,9 @@ def detect_text():
 if __name__ == '__main__':
     # Get port from environment variable or use 5000 as default
     port = int(os.environ.get('PORT', 5000))
+<<<<<<< Updated upstream:combined_image_text/main.py
     app.run(host='0.0.0.0', port=port, debug=True)
+=======
+    debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+>>>>>>> Stashed changes:server.py

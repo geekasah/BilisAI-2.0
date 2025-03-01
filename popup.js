@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorMessage = document.getElementById('errorMessage');
   const errorText = document.querySelector('.error-text');
 
+<<<<<<< Updated upstream
   // Load current state from storage
   updateFromStorage();
   
@@ -142,4 +143,140 @@ document.addEventListener('DOMContentLoaded', () => {
     errorMessage.classList.remove('hidden');
     errorText.textContent = `Error: ${errorMessage}`;
   }
+=======
+  // Show loading state immediately
+  function showLoading(context) {
+    container.innerHTML = `
+      <div id="loadingWrapper">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Analyzing ${context}...</p>
+        <p class="loading-subtext">This may take a few moments</p>
+      </div>
+    `;
+  }
+
+  // Check if we're in a loading state
+  chrome.storage.local.get(['isAnalyzing', 'analysisContext'], (loadingData) => {
+    if (loadingData.isAnalyzing) {
+      showLoading(loadingData.analysisContext || 'content');
+      
+      // Set a timeout to handle potential stuck loading state
+      setTimeout(() => {
+        chrome.storage.local.get([
+          'dataType', 
+          'errorMessage',
+          'errorContext'
+        ], (data) => {
+          // If no data after timeout, show error
+          if (data.dataType === "error" || !data.dataType) {
+            container.innerHTML = `
+              <div id="errorWrapper">
+                <h2>Analysis Timed Out</h2>
+                <p>The analysis took longer than expected.</p>
+                <p class="troubleshoot">
+                  Possible reasons:
+                  • Large file size
+                  • Network slowness
+                  • Server processing delay
+                </p>
+              </div>
+            `;
+          }
+        });
+      }, 60000); // 1 minute timeout
+      return;
+    }
+
+    // Regular data processing
+    chrome.storage.local.get([
+      'dataType', 
+      'selectedImage', 
+      'selectedVideo',
+      'prediction', 
+      'confidence', 
+      'selectedText', 
+      'label', 
+      'probability',
+      'is_ai_generated',
+      'sampled_frames',
+      'errorMessage',
+      'errorContext'
+    ], (data) => {
+      const type = data.dataType;
+
+      // Error handling first
+      if (type === "error") {
+        container.innerHTML = `
+          <div id="errorWrapper">
+            <h2>Analysis Error</h2>
+            <p><strong>Context:</strong> ${data.errorContext || 'Unknown'}</p>
+            <p><strong>Error:</strong> ${data.errorMessage || 'No details available'}</p>
+            <p class="troubleshoot">
+              Possible reasons:
+              • Server not running
+              • Network connectivity issues
+              • CORS restrictions
+              • File type not supported
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      if (type === "image" && data.selectedImage) {
+        container.innerHTML = `
+          <div id="imageWrapper">
+            <img src="${data.selectedImage}" alt="Selected Image" id="selectedImage">
+          </div>
+          <div id="result">
+            <div id="predictionLabel">Prediction:</div>
+            <div id="predictionValue">${data.prediction}</div>
+            <div id="confidenceLabel">Confidence Level:</div>
+            <div id="confidenceValue">${(data.confidence * 100).toFixed(2)}%</div>
+            <div id="generatedLabel">AI Generated:</div>
+            <div id="generatedValue">${data.is_ai_generated ? 'Yes' : 'No'}</div>
+          </div>
+        `;
+      }
+
+      else if (type === "video" && data.selectedVideo) {
+        container.innerHTML = `
+          <div id="videoWrapper">
+            <video controls id="selectedVideo">
+              <source src="${data.selectedVideo}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div id="result">
+            <div id="predictionLabel">Prediction:</div>
+            <div id="predictionValue">${data.prediction}</div>
+            <div id="confidenceLabel">Confidence Level:</div>
+            <div id="confidenceValue">${(data.confidence * 100).toFixed(2)}%</div>
+            <div id="generatedLabel">AI Generated:</div>
+            <div id="generatedValue">${data.is_ai_generated ? 'Yes' : 'No'}</div>
+            <div id="framesLabel">Sampled Frames:</div>
+            <div id="framesValue">${data.sampled_frames}</div>
+          </div>
+        `;
+      }
+
+      else if (type === "text" && data.selectedText) {
+        container.innerHTML = `
+            <div id="textWrapper">
+              <p id="selectedText">${data.selectedText}</p>
+            </div>
+            <div id="result">
+              <div id="labelLabel">Prediction:</div>
+              <div id="labelValue">${data.label}</div>
+              <div id="confidenceLabel">Confidence Level:</div>
+              <div id="confidenceValue">${(data.probability * 100).toFixed(2)}%</div>
+            </div>
+          `;
+      } 
+      else {
+        container.innerHTML = `<p>No data selected.</p>`;
+      }
+    });
+  });
+>>>>>>> Stashed changes
 });

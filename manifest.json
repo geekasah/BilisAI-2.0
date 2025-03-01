@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
+<<<<<<< Updated upstream
   "name": "Bilis AI Detector",
   "version": "1.0",
   "description": "Detect AI-generated images and videos with confidence scores",
+=======
+  "name": "Bilis AI - Image, Video & Text Analyzer",
+  "version": "1.1",
+>>>>>>> Stashed changes
   "permissions": [
     "contextMenus",
     "storage",

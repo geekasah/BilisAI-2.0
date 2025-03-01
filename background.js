@@ -12,6 +12,7 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Check if this video is AI-generated",
     contexts: ["video"]
   });
+<<<<<<< Updated upstream
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -244,3 +245,228 @@ function analyzeImageStatistics(imageData) {
   // Return a score between 0-100
   return Math.min(Math.max(score * 100, 0), 100);
 }
+=======
+
+  // New context menu item for videos
+  chrome.contextMenus.create({
+    id: "fetchVideo",
+    title: "Analyze this video",
+    contexts: ["video"]
+  });
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  // Set loading state before analysis
+  const setLoadingState = (context) => {
+    chrome.storage.local.set({
+      isAnalyzing: true,
+      analysisContext: context
+    });
+  };
+
+  // Clear loading state after analysis
+  const clearLoadingState = () => {
+    chrome.storage.local.remove(['isAnalyzing', 'analysisContext']);
+  };
+
+  // IMAGE FLOW
+  if (info.menuItemId === "fetchImage") {
+    const imageUrl = info.srcUrl;
+    
+    // Set loading state
+    setLoadingState('image');
+
+    // Fetch the image as a blob
+    fetch(imageUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        // Create a FormData instance and append the blob as a file
+        const formData = new FormData();
+        formData.append('image', blob, 'image.jpg'); // filename can be adjusted
+
+        // Send the POST request to the Python API endpoint
+        return fetch('http://localhost:5000/detect', {
+          method: 'POST',
+          body: formData
+        });
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`API error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(result => {
+        // Clear loading state
+        clearLoadingState();
+
+        // The API returns a JSON object with keys:
+        // 'prediction', 'confidence', 'is_ai_generated', and 'status'
+        chrome.storage.local.set({
+          dataType: "image",
+          selectedImage: imageUrl,
+          prediction: result.prediction,
+          confidence: result.confidence,
+          is_ai_generated: result.is_ai_generated
+        }, () => {
+          console.log("Image analysis saved:", result);
+          // Optionally, open the popup automatically if allowed by user gesture:
+          chrome.action.openPopup().catch(err => console.error("openPopup() failed:", err));
+        });
+      })
+      .catch(error => {
+        // Clear loading state
+        clearLoadingState();
+
+        console.error("Error in image analysis:", error);
+        
+        // Store error in local storage for user feedback
+        chrome.storage.local.set({
+          dataType: "error",
+          errorMessage: error.toString(),
+          errorContext: "Image Analysis"
+        }, () => {
+          chrome.action.openPopup().catch(err => console.error("openPopup() failed:", err));
+        });
+      });
+  }
+
+  // VIDEO FLOW
+  else if (info.menuItemId === "fetchVideo") {
+    const videoUrl = info.srcUrl;
+    
+    // Set loading state
+    setLoadingState('video');
+    
+    console.log("Starting video analysis for:", videoUrl);
+
+    // Fetch the video as a blob
+    fetch(videoUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        console.log("Video fetched successfully, converting to blob");
+        return response.blob();
+      })
+      .then(blob => {
+        // Log blob info for debugging
+        console.log(`Blob received: ${blob.size} bytes, type: ${blob.type}`);
+        
+        // Create a FormData instance and append the blob as a file
+        const formData = new FormData();
+        formData.append('video', blob, 'video.mp4');
+
+        // Send the POST request to the Python API endpoint
+        console.log("Sending video to API for analysis");
+        return fetch('http://localhost:5000/detect-video', {
+          method: 'POST',
+          body: formData,
+          // Add these headers to help with potential CORS issues
+          headers: {
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      })
+      .then(response => {
+        if (!response.ok) {
+          console.error(`API returned error status: ${response.status}`);
+          throw new Error(`API error! status: ${response.status}`);
+        }
+        console.log("API response received, parsing JSON");
+        return response.json();
+      })
+      .then(result => {
+        // Clear loading state
+        clearLoadingState();
+        
+        console.log("Video analysis complete:", result);
+
+        // Store video analysis results
+        chrome.storage.local.set({
+          dataType: "video",
+          selectedVideo: videoUrl,
+          prediction: result.prediction,
+          confidence: result.confidence,
+          is_ai_generated: result.is_ai_generated,
+          sampled_frames: result.sampled_frames
+        }, () => {
+          console.log("Video analysis saved to storage");
+          // Open the popup automatically
+          chrome.action.openPopup().catch(err => console.error("openPopup() failed:", err));
+        });
+      })
+      .catch(error => {
+        // Clear loading state
+        clearLoadingState();
+
+        console.error("Error in video analysis:", error);
+        
+        // Store error in local storage for user feedback
+        chrome.storage.local.set({
+          dataType: "error",
+          errorMessage: error.toString(),
+          errorContext: "Video Analysis"
+        }, () => {
+          chrome.action.openPopup().catch(err => console.error("openPopup() failed:", err));
+        });
+      });
+  }
+
+  // TEXT FLOW
+  else if (info.menuItemId === "analyzeText") {
+    const selectedText = info.selectionText || "";
+    
+    // Set loading state
+    setLoadingState('text');
+
+    fetch('http://localhost:5000/detect-text', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ text: selectedText })
+    })
+      .then(response => {
+        if (!response.ok)
+          throw new Error("API request failed with status " + response.status);
+        return response.json();
+      })
+      .then(result => {
+        // Clear loading state
+        clearLoadingState();
+
+        chrome.storage.local.set({
+          dataType: "text",
+          selectedText: selectedText,
+          label: result.label,
+          probability: result.probability
+        }, () => {
+          console.log("Text analysis saved:", result);
+          chrome.action.openPopup().catch(err => console.error("openPopup() failed:", err));
+        });
+      })
+      .catch(error => {
+        // Clear loading state
+        clearLoadingState();
+
+        console.error("Error sending text to API:", error);
+        
+        // Store error in local storage for user feedback
+        chrome.storage.local.set({
+          dataType: "error",
+          errorMessage: error.toString(),
+          errorContext: "Text Analysis"
+        }, () => {
+          chrome.action.openPopup().catch(err => console.error("openPopup() failed:", err));
+        });
+      });
+  }
+});
+>>>>>>> Stashed changes
