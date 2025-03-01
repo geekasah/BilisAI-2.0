@@ -1,0 +1,68 @@
+/* Use Inter as our main font */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 320px; /* Adjust width as needed */
+    background-color: #FFFFFF;
+    color: #000;
+    box-sizing: border-box;
+  }
+  
+  /* Header section with a light background and a border */
+  #popupHeader {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: #F8F9FB; /* Light gray background */
+    border-bottom: 1px solid #E0E0E0;
+  }
+  
+  /* Logo image in the header */
+  #bilisLogo {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+  }
+  
+  /* Product name next to the logo */
+  #productName {
+    font-weight: 700;  /* Bold */
+    font-size: 16px;
+    color: #333;
+  }
+  
+  /* Main content area below the header */
+  #content {
+    padding: 16px;
+    text-align: center;
+  }
+  
+  /* Wrapper around the selected image */
+  #imageWrapper {
+    margin: 20px 0;
+  }
+  
+  /* Selected image with rounded corners */
+  #selectedImage {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Label for the pixel count in a smaller, medium-weight Inter font */
+  #pixelCountLabel {
+    font-size: 14px;
+    font-weight: 500; /* Medium */
+    color: #444;
+    margin-bottom: 4px;
+  }
+  
+  /* Pixel count in a larger, bold, blue Inter font */
+  #pixelCount {
+    font-size: 20px;
+    font-weight: 700; /* Bold */
+    color: #007BFF;   /* A nice blue color */
+  }
+  
