@@ -30,7 +30,7 @@ To load the Chrome extension, follow these steps:
 
 Open Chrome and go to `chrome://extensions`.
 Enable `Developer Mode` at the top-right of the page.
-#### 5. Load the Unpacked Extension
+### 5. Load the Unpacked Extension
 Click the `Load Unpacked` button and select the directory where you cloned the GitHub repository. This will load the extension in your Chrome browser.
 
 ### 6. Start the Server
