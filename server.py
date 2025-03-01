@@ -1,10 +1,11 @@
-from transformers import AutoImageProcessor, AutoTokenizer, AutoConfig, AutoModelForImageClassification, AutoModel, PreTrainedModel
+from transformers import AutoImageProcessor, AutoTokenizer, AutoConfig, AutoModelForImageClassification, AutoModel
 import torch
 import torch.nn as nn
 from PIL import Image
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+from transformers import PreTrainedModel
 
 # Custom AI text detection model class
 class DesklibAIDetectionModel(PreTrainedModel):
@@ -111,7 +112,6 @@ text_model.to(device)
 if device.type == 'cuda':
     # Use mixed precision for faster computation on GPU
     text_model = text_model.half()  # Convert to FP16
-    image_model = image_model.half()  # Convert to FP16
 
 # Route to serve the HTML file
 @app.route('/')
@@ -139,11 +139,10 @@ def detect_image():
         if image.mode == 'RGBA':
             image = image.convert('RGB')
         
-        # Process the image
+        # Convert your inputs to half precision
         inputs = image_processor(images=image, return_tensors="pt")
-        
-        # Move inputs to the same device as the model
         inputs = {k: v.to(device) for k, v in inputs.items()}
+
         
         # Make prediction
         with torch.no_grad():
@@ -163,6 +162,7 @@ def detect_image():
             'status': 'success'
         })
     except Exception as e:
+        print(e)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/detect-text', methods=['POST'])

@@ -36,6 +36,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       .then(result => {
         // The API returns a JSON object with keys:
         // 'prediction', 'confidence', 'is_ai_generated', and 'status'
+        
+        if (result.prediction && result.prediction.toLowerCase() === "artificial") {
+          result.prediction = "AI Generated";
+        } else {
+          result.prediction = "Not AI Generated";
+        }
+
         chrome.storage.local.set({
           dataType: "image",
           selectedImage: imageUrl,
