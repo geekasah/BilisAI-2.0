@@ -44,10 +44,13 @@ body {
 }
 
 #selectedImage {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: block;
+  width: 90%;       /* Fixed width */
+  height: 240px;      /* Fixed height */
+  object-fit: cover;  /* Maintain aspect ratio and fill the space */
+  border-radius: 8px; /* Optional rounded corners */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* Optional shadow */
+  margin: 0 auto;     /* Center horizontally */
 }
 
 /* ============= TEXT UI ============= */
@@ -106,4 +109,14 @@ body {
   font-weight: 700; /* Bold */
   color: #007BFF;   /* A nice bright blue */
   margin-bottom: 8px;
+}
+
+#selectedVideo {
+  display: block;
+  width: 90%;       /* Fixed width */
+  height: 240px;      /* Fixed height */
+  object-fit: cover;  /* Maintain aspect ratio and fill the space */
+  border-radius: 8px; /* Optional rounded corners */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* Optional shadow */
+  margin: 0 auto;     /* Center horizontally */
 }
