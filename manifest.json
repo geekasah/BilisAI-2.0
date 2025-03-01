@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Image Fetcher Popup",
+  "name": "Bilis AI Detector",
   "version": "1.0",
+  "description": "Detect AI-generated images and videos with confidence scores",
   "permissions": [
     "contextMenus",
     "storage",
@@ -14,6 +15,13 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

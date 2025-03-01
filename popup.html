@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Bilis AI - Image Pixel Count</title>
+  <title>Bilis AI - AI Content Detector</title>
   <!-- Link to your CSS file -->
   <link rel="stylesheet" href="style.css">
   <!-- Import the Inter font (regular, medium, bold) -->
@@ -11,15 +11,45 @@
 <body>
   <!-- Header with logo and product name -->
   <div id="popupHeader">
-    <!-- Replace "icons/logo.png" with the path to your own logo -->
+    <!-- Replace with the path to your logo -->
     <img src="icon.png" alt="Bilis AI Logo" id="bilisLogo">
-    <span id="productName">Bilis AI</span>
+    <span id="productName">Bilis AI Detector</span>
   </div>
 
   <!-- Main content area -->
   <div id="content">
-    <!-- Default message; replaced by popup.js if an image is selected -->
-    <p>No image selected.</p>
+    <!-- Default message; replaced by popup.js if media is selected -->
+    <p>No media selected.</p>
+  </div>
+
+  <!-- Processing indicator (hidden by default) -->
+  <div id="processingIndicator" class="hidden">
+    <div class="loader"></div>
+    <div id="processingStatus">Analyzing...</div>
+    <div id="processingProgress" class="hidden">
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="progress-text">0%</div>
+    </div>
+  </div>
+
+  <!-- Results section (hidden by default) -->
+  <div id="resultsSection" class="hidden">
+    <div class="result-card">
+      <div class="result-header">AI Generation Confidence</div>
+      <div class="confidence-meter">
+        <div class="confidence-fill"></div>
+      </div>
+      <div class="confidence-value">0%</div>
+      <div class="confidence-label">confidence this content is AI-generated</div>
+    </div>
+  </div>
+
+  <!-- Error message (hidden by default) -->
+  <div id="errorMessage" class="hidden">
+    <div class="error-icon">⚠️</div>
+    <div class="error-text">An error occurred</div>
   </div>
 
   <!-- Link to your popup JS -->
