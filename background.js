@@ -54,22 +54,27 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   // TEXT FLOW
   else if (info.menuItemId === "analyzeText") {
     const selectedText = info.selectionText || "";
-
-    // Naive word count: split on whitespace. Trim first to avoid extra spaces.
-    const wordCount = selectedText.trim().split(/\s+/).filter(Boolean).length;
-
-    // Store the data in Chrome storage, marking it as 'text'
-    chrome.storage.local.set({
-      dataType: "text",
-      selectedText: selectedText,
-      wordCount: wordCount
-    }, () => {
-      console.log("Text + word count saved:", selectedText, wordCount);
-
-      // Attempt to open the popup automatically
-      chrome.action.openPopup().catch(err => {
-        console.error("openPopup() failed:", err);
-      });
-    });
+    fetch('http://localhost:5000/detect-text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: selectedText })
+    })
+      .then(response => {
+        if (!response.ok)
+          throw new Error("API request failed with status " + response.status);
+        return response.json();
+      })
+      .then(result => {
+        chrome.storage.local.set({
+          dataType: "text",
+          selectedText: selectedText,
+          label: result.label,
+          probability: result.probability
+        }, () => {
+          console.log("Text analysis saved:", result);
+          chrome.action.openPopup().catch(err => console.error("openPopup() failed:", err));
+        });
+      })
+      .catch(error => console.error("Error sending text to API:", error));
   }
 });

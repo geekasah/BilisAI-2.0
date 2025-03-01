@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('content');
 
-   chrome.storage.local.get(['dataType', 'selectedImage', 'prediction', 'confidence', 'selectedText', 'wordCount'], (data) => {
+   chrome.storage.local.get(['dataType', 'selectedImage', 'prediction', 'confidence', 'selectedText', 'label', 'probability'], (data) => {
     const type = data.dataType;
 
     if (type === "image" && data.selectedImage) {
@@ -17,16 +17,20 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
     }
-    
+
     else if (type === "text" && data.selectedText) {
       // Render text-related UI
       container.innerHTML = `
-        <div id="textWrapper">
-          <p id="selectedText">${data.selectedText}</p>
-        </div>
-        <div id="wordCountLabel">The number of words in this sentence is</div>
-        <div id="wordCount">${data.wordCount} words</div>
-      `;
+          <div id="textWrapper">
+            <p id="selectedText">${data.selectedText}</p>
+          </div>
+          <div id="result">
+            <div id="labelLabel">Prediction:</div>
+            <div id="labelValue">${data.label}</div>
+            <div id="confidenceLabel">Confidence Level:</div>
+            <div id="confidenceValue">${(data.probability * 100).toFixed(2)}%</div>
+          </div>
+        `;
     } 
     else {
       // Default message if nothing was stored
